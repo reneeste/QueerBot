@@ -17,27 +17,13 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="/" , intents=intents, application_id="1313994355974869013")
+GUILD = os.getenv('GUILD_ID')
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-@bot.event
-async def on_ready():
-    print(f"Logged in as {bot.user}")
-    global current_prompt
-    activity = discord.Activity(type=discord.ActivityType.listening, name="/info")
-    await bot.change_presence(activity=activity)
-    print("Activity set")
-    current_prompt = load_prompt()
-    await bot.tree.sync() 
-    print("Slash commands synced")
-    scheduled_start.start()
-    scheduled_end.start()
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -166,7 +152,7 @@ async def scheduled_end():
   if datetime.now(timezone.utc).weekday() == 6:  # 6 = Sunday
     await end_challenge(bot)
 
-@bot.tree.command(name="admin-end", description="Manually end the Weekly Queer Quill challenge (Admin Only).")
+@bot.tree.command(name="admin-end", description="Manually end the Weekly Queer Quill challenge (Admin Only)")
 async def admin_end(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -228,7 +214,7 @@ async def scheduled_start():
     if datetime.now(timezone.utc).weekday() == 0:  # Monday
       await start_challenge(bot)
 
-@bot.tree.command(name="admin-start", description="Manually start the Weekly Queer Quill challenge (Admin Only).")
+@bot.tree.command(name="admin-start", description="Manually start the Weekly Queer Quill challenge (Admin Only)")
 async def admin_start(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -272,7 +258,7 @@ async def start_challenge(bot, guild=None, interaction=None):
 
 # Commands
 # Join
-@bot.tree.command(name="join", description="Join the Weekly Queer Quill challenge.")
+@bot.tree.command(name="join", description="Join the Weekly Queer Quill challenge")
 async def join(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -302,7 +288,7 @@ async def join(interaction: discord.Interaction):
         )
 
 # Leave
-@bot.tree.command(name="leave", description="Leave the Weekly Queer Quill challenge.")
+@bot.tree.command(name="leave", description="Leave the Weekly Queer Quill challenge")
 async def leave(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -333,7 +319,7 @@ async def leave(interaction: discord.Interaction):
         )
 
 # Info
-@bot.tree.command(name="info", description="Get information about the Weekly Queer Quill challenge.")
+@bot.tree.command(name="info", description="Get information about the Weekly Queer Quill challenge")
 async def info(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -343,14 +329,14 @@ async def info(interaction: discord.Interaction):
 
     # Base message about the challenge
     base_message = (
-        "Each week, Weekly Queer Quill kicks off a fun writing challenge! "
+        "Each week, Weekly Queer Quill kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist!"
         "Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
 
     if current_prompt is None:  # No active challenge
         embed = discord.Embed(
             title="Weekly Queer Quill Challenge Information",
-            description=f"{base_message}\n\n*The Weekly Queer Quill challenge is not active at the moment.*",
+            description=f"{base_message}\n\nThe Weekly Queer Quill challenge is not active at the moment.",
             color=discord.Color.greyple() 
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -369,7 +355,7 @@ async def info(interaction: discord.Interaction):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 # Participants
-@bot.tree.command(name="participants", description="List all participants of the current Weekly Queer Quill challenge.")
+@bot.tree.command(name="participants", description="List all participants of the current Weekly Queer Quill challenge")
 async def participants(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -377,9 +363,7 @@ async def participants(interaction: discord.Interaction):
     
     global current_prompt
     if current_prompt is None:
-        # Embed for no active challenge
         embed = discord.Embed(
-            title="Weekly Queer Quill Challenge",
             description="The Weekly Queer Quill challenge is not active at the moment.",
             color=discord.Color.greyple()
         )
@@ -406,6 +390,49 @@ async def participants(interaction: discord.Interaction):
             await interaction.response.send_message(
                 "Error. Please contact an administrator.", ephemeral=True
             )
+            
+# Prompt
+@bot.tree.command(name="prompt", description="Learn about submitting prompts", guild=discord.Object(id=GUILD))
+async def prompt(interaction: discord.Interaction):
+    if not is_in_weekly_queer_quill_channel(interaction):
+        await send_channel_error(interaction)
+        return
+
+    embed = discord.Embed(
+        title="How Prompts Work",
+        description=(
+            "The Weekly Queer Quill challenge combines a randomly selected plot idea with a plot twist! For example: *Two spies on opposite sides of the mission find themselves stranded together, BUT the characters' meeting was planned by a third party.*\n\n"
+            "Want to add your own ideas? Use `/prompt add` to submit a short plot idea, and Queer Bot will make sure to twist it up!"
+        ),
+        color=discord.Color.greyple()
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+# @bot.tree.command(name="prompt_add", description="Submit your own story prompt")
+# @app_commands.describe(prompt="plot prompt")
+# async def prompt_add(interaction: discord.Interaction, prompt: str):
+#     if not is_in_weekly_queer_quill_channel(interaction):
+#         await send_channel_error(interaction)
+#         return
+
+#     # Validation
+#     if len(prompt) > 150:
+#         await interaction.response.send_message(
+#             "Prompt is too long!", ephemeral=True
+#         )
+#         return
+
+#     # Save to database
+#     try:
+#         db.collection('prompts').document('user_inputs').update({
+#             'inputs': firestore.ArrayUnion([prompt])
+#         })
+#     except firestore.NotFound:
+#         db.collection('prompts').document('user_inputs').set({'inputs': [prompt]})
+
+#     await interaction.response.send_message(
+#         "Thank you! Your prompt has been sent in!", ephemeral=True
+#     )
 
 # Challenge history
 def add_to_challenge_history(end_date, prompt, participants):
@@ -431,6 +458,23 @@ async def send_channel_error(interaction: discord.Interaction):
         color=discord.Color.red()
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
+    
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Run
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+    global current_prompt
+    activity = discord.Activity(type=discord.ActivityType.listening, name="/info")
+    await bot.change_presence(activity=activity)
+    print("Activity set")
+    current_prompt = load_prompt()
+    await bot.tree.sync() 
+    print("Slash commands synced")
+    scheduled_start.start()
+    scheduled_end.start()
+    print("Challenge schedule set")
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 bot.run(TOKEN)
