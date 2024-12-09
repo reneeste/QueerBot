@@ -16,8 +16,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-bot = commands.Bot(command_prefix="/" , intents=intents, application_id="1313994355974869013")
-GUILD = os.getenv('GUILD_ID')
+bot = commands.Bot(command_prefix="/" , intents=intents, application_id="1313994355974869013"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -392,7 +391,7 @@ async def participants(interaction: discord.Interaction):
             )
             
 # Prompt
-@bot.tree.command(name="prompt", description="Learn about submitting prompts", guild=discord.Object(id=GUILD))
+@bot.tree.command(name="prompt", description="Learn about submitting prompts")
 async def prompt(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -407,32 +406,6 @@ async def prompt(interaction: discord.Interaction):
         color=discord.Color.greyple()
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
-
-# @bot.tree.command(name="prompt_add", description="Submit your own story prompt")
-# @app_commands.describe(prompt="plot prompt")
-# async def prompt_add(interaction: discord.Interaction, prompt: str):
-#     if not is_in_weekly_queer_quill_channel(interaction):
-#         await send_channel_error(interaction)
-#         return
-
-#     # Validation
-#     if len(prompt) > 150:
-#         await interaction.response.send_message(
-#             "Prompt is too long!", ephemeral=True
-#         )
-#         return
-
-#     # Save to database
-#     try:
-#         db.collection('prompts').document('user_inputs').update({
-#             'inputs': firestore.ArrayUnion([prompt])
-#         })
-#     except firestore.NotFound:
-#         db.collection('prompts').document('user_inputs').set({'inputs': [prompt]})
-
-#     await interaction.response.send_message(
-#         "Thank you! Your prompt has been sent in!", ephemeral=True
-#     )
 
 # Challenge history
 def add_to_challenge_history(end_date, prompt, participants):
