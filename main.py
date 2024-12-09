@@ -113,7 +113,7 @@ async def create_poll(channel):
 
     # Add each prompt as a field in the embed
     for i, prompt in enumerate(poll_prompts, 1):
-        embed.add_field(name=f"{i}️. ", value=f"{prompt}", inline=False)
+        embed.add_field(name="", value=f"**{i}️.** {prompt}", inline=False)
 
     poll_message = await channel.send(embed=embed)
 
@@ -187,7 +187,7 @@ async def end_challenge(bot, interaction=None):
 
                 challenge_channel = discord.utils.get(guild.channels, name="weekly-queer-quill")
                 if challenge_channel:
-                    participants_message = ", ".join(participants_mentions) if participants_mentions else "no participants this week."
+                    participants_message = " ".join(participants_mentions[::-1]) if participants_mentions else "no participants this week."
                     embed = discord.Embed(
                         title="The Weekly Queer Quill challenge has ended",
                         description=f"*{prompt_copy}*\n\n"
@@ -249,7 +249,7 @@ async def start_challenge(bot, guild=None, interaction=None):
                     title="The Weekly Queer Quill challenge has begun!",
                     description=(
                         f"**And this week's prompt is...** *{current_prompt}*\n\n"
-                        f"The challenge ends on **{end_time_str}**. Use </join:1314793651230216213> to participate!"
+                        f"The challenge ends on **{end_time_str}**. Use </join:1315801705304035350> to participate!"
                     ),
                     color=discord.Color.dark_purple()
                 )
@@ -264,7 +264,7 @@ async def start_challenge(bot, guild=None, interaction=None):
 
 # Commands
 
-CHALLENGE_INACTIVE_MESSAGE = ( "The Weekly Queer Quill challenge is not active at the moment. Please wait until the next challenge starts." )
+CHALLENGE_INACTIVE_MESSAGE = ( "The **Weekly Queer Quill** challenge is **not active** at the moment. Please wait until the next challenge starts." )
 
 # Join
 @bot.tree.command(name="join", description="Join the Weekly Queer Quill challenge")
@@ -282,13 +282,13 @@ async def join(interaction: discord.Interaction):
     if role:
         if role in interaction.user.roles:
             await interaction.response.send_message(
-                f"{interaction.user.mention}, you have already joined the Weekly Queer Quill challenge.", 
+                f"{interaction.user.mention}, you have already joined the **Weekly Queer Quill** challenge.", 
                 ephemeral=True
             )
         else:
             await interaction.user.add_roles(role)
             await interaction.response.send_message(
-                f"{interaction.user.mention} has joined the Weekly Queer Quill challenge!", 
+                f"{interaction.user.mention} has joined the **Weekly Queer Quill** challenge!", 
             )
     else:
         await interaction.response.send_message(
@@ -298,7 +298,7 @@ async def join(interaction: discord.Interaction):
 
 # Leave
 @bot.tree.command(name="leave", description="Leave the Weekly Queer Quill challenge")
-async def leave(interaction: discord.Interaction):
+async def leavee(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -312,13 +312,13 @@ async def leave(interaction: discord.Interaction):
     if role:
         if role not in interaction.user.roles:
             await interaction.response.send_message(
-                f"{interaction.user.mention}, you are currently not in the Weekly Queer Quill challenge.", 
+                f"You are currently not in the **Weekly Queer Quill** challenge.", 
                 ephemeral=True
             )
         else:
             await interaction.user.remove_roles(role)
             await interaction.response.send_message(
-                f"{interaction.user.mention}, you have left the Weekly Queer Quill challenge.", 
+                f"You have left the **Weekly Queer Quill** challenge.", 
                 ephemeral=True
             )
     else:
@@ -329,7 +329,7 @@ async def leave(interaction: discord.Interaction):
 
 # Info
 @bot.tree.command(name="info", description="Get information about the Weekly Queer Quill challenge")
-async def info(interaction: discord.Interaction):
+async def infoo(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -338,14 +338,13 @@ async def info(interaction: discord.Interaction):
 
     # Base message about the challenge
     base_message = (
-        "Each week, Weekly Queer Quill kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist!"
-        "Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
+        "Each week, **Weekly Queer Quill** kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist! Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
 
     if current_prompt is None:  # No active challenge
         embed = discord.Embed(
             title="Weekly Queer Quill Challenge Information",
-            description=f"{base_message}\n\nThe Weekly Queer Quill challenge is not active at the moment.",
+            description=f"{base_message}\n\nThe challenge is **not active** at the moment.",
             color=discord.Color.greyple() 
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -357,9 +356,10 @@ async def info(interaction: discord.Interaction):
             description=f"{base_message}\n\n\u200b",
             color=discord.Color.greyple()
         )
-        # Add fields for the ongoing prompt and time remaining
-        embed.add_field(name="Ongoing Prompt", value=current_prompt, inline=False)
-        embed.add_field(name="Time Remaining", value=time_remaining_str, inline=False)
+        # Add fields for the ongoing prompt and time remaining f"{i}️. {prompt}"
+        embed.add_field(name="", value=f"**Ongoing Prompt:** {current_prompt}", inline=False)
+        embed.add_field(name="", value=f"**Time Remaining:** {time_remaining_str}", inline=False)
+        embed.add_field(name="", value=f"Use </join:1315801705304035350> to participate if you haven't yet!", inline=False)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -373,24 +373,24 @@ async def participants(interaction: discord.Interaction):
     global current_prompt
     if current_prompt is None:
         embed = discord.Embed(
-            description="The Weekly Queer Quill challenge is not active at the moment.",
+            description="The **Weekly Queer Quill** challenge is **not active** at the moment.",
             color=discord.Color.greyple()
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
     else:
         role = discord.utils.get(interaction.guild.roles, name="Weekly Queer Quill")
         if role:
-            members = [member.mention for member in role.members]
+            members = [member.mention for member in role.members][::-1]
             if members:
                 # Embed showing participants
                 embed = discord.Embed(
-                    description="Here are the people taking part in this week's Queer Quill:\n\n" + ", ".join(members),
+                    description="Here are the people taking part in the current **Weekly Queer Quill**:\n\n" + " ".join(members),
                     color=discord.Color.greyple()
                 )
             else:
                 # Embed for no participants yet
                 embed = discord.Embed(
-                    description="No one has joined yet. Be the first to participate by using </join:1314793651230216213>!",
+                    description="No one has joined the **Weekly Queer Quill** yet. Be the first to participate by using </join:1315801705304035350>!",
                     color=discord.Color.greyple()
                 )
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -410,8 +410,8 @@ async def prompt(interaction: discord.Interaction):
     embed = discord.Embed(
         title="How Prompts Work",
         description=(
-            "The Weekly Queer Quill challenge combines a randomly selected plot idea with a plot twist! For example: *Two spies on opposite sides of the mission find themselves stranded together, BUT the characters' meeting was planned by a third party.*\n\n"
-            "Want to add your own ideas? Use `/prompt add` to submit a short plot idea, and Queer Bot will make sure to twist it up!"
+            "The **Weekly Queer Quill** challenge combines a randomly selected plot idea with a plot twist! For example: Two spies on opposite sides of the mission find themselves stranded together, BUT the characters' meeting was planned by a third party.\n\n"
+            "**Want to add your own prompt?** Use `/prompt add` to submit a short plot idea, and QueerBot will make sure to twist it up!"
         ),
         color=discord.Color.greyple()
     )
@@ -442,7 +442,7 @@ async def send_channel_error(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
     
-@bot.tree.command(name="admin-sync", description="Sync all bot commands (Admin Only)")
+@bot.tree.command(name="admin-sync", description="Sync commands (Admin Only)")
 async def admin_sync(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
@@ -474,7 +474,7 @@ async def on_ready():
     scheduled_end.start()
     print("Challenge schedule set")
     #await bot.tree.sync()
-    print("Note: Remember to use /admin-sync if commands have been altered")
+    print("Note: Remember to use /admin-sync if commands need to be synced")
     
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
