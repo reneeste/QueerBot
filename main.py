@@ -9,8 +9,7 @@ from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+# Bot
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 intents = discord.Intents.default()
@@ -18,18 +17,10 @@ intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="/" , intents=intents, application_id="1313994355974869013")
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+# Firebase
 cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-CHALLENGE_INACTIVE_MESSAGE = ( "The Weekly Queer Quill challenge is not active at the moment. Please wait until the next challenge starts." )
-
-START_TIME = time(12, 0)  # Start time: Monday at 12:00 UTC
-END_TIME = time(16, 0)    # End time: Sunday at 16:00 UTC
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -62,12 +53,27 @@ def clear_prompt():
 current_prompt = None
 
 # Time
+def load_times_from_firestore():
+    doc = db.collection('data').document('times').get()
+    if doc.exists:
+        times = doc.to_dict()
+        try:
+            start_hour, start_minute = map(int, times['start_time'].split(':'))
+            end_hour, end_minute = map(int, times['end_time'].split(':'))
+            return time(start_hour, start_minute), time(end_hour, end_minute)
+        except (ValueError, KeyError) as e:
+            print(f"Error parsing times from Firestore: {e}")
+            raise ValueError("Invalid time format in Firestore. Expected 'H:M'.")
+    else:
+        raise ValueError("Times not found in Firestore. Please add them first.")
+    
+START_TIME, END_TIME = load_times_from_firestore()
+
 def get_next_sunday_end_time():
     now = datetime.now(timezone.utc)  # Use timezone-aware UTC
     next_sunday = now + timedelta(days=(6 - now.weekday()))  # Find the next Sunday
     end_time = datetime.combine(next_sunday.date(), time(16, 0, 0), tzinfo=timezone.utc)  # Set the end time at 16:00 UTC
     return end_time
-
 
 def time_until_end():
     now = datetime.now(timezone.utc)  # Use timezone-aware datetime in UTC
@@ -256,6 +262,9 @@ async def start_challenge(bot, guild=None, interaction=None):
 
 
 # Commands
+
+CHALLENGE_INACTIVE_MESSAGE = ( "The Weekly Queer Quill challenge is not active at the moment. Please wait until the next challenge starts." )
+
 # Join
 @bot.tree.command(name="join", description="Join the Weekly Queer Quill challenge")
 async def join(interaction: discord.Interaction):
@@ -447,7 +456,7 @@ async def on_ready():
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
-
+    
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 bot.run(TOKEN)
