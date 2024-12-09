@@ -16,6 +16,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="/" , intents=intents, application_id="1313994355974869013")
+GUILD_ID = os.getenv('GUILD_ID')
 
 # Firebase
 cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
@@ -441,6 +442,24 @@ async def send_channel_error(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
     
+@bot.tree.command(name="admin-sync", description="Sync all bot commands (Admin Only)")
+async def admin_sync(interaction: discord.Interaction):
+    if not is_in_weekly_queer_quill_channel(interaction):
+        await send_channel_error(interaction)
+        return
+    
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        return
+
+    try:
+        await bot.tree.sync(guild=interaction.guild)
+        await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
+        print("Bot commands synced")
+    except Exception as e:
+        await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
+        print(f"Error syncing commands: {e}")
+    
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 @bot.event
@@ -451,11 +470,11 @@ async def on_ready():
     await bot.change_presence(activity=activity)
     print("Activity set")
     current_prompt = load_prompt()
-    await bot.tree.sync() 
-    print("Slash commands synced")
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
+    #await bot.tree.sync()
+    print("Note: Remember to use /admin-sync if commands have been altered")
     
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
