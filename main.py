@@ -381,11 +381,7 @@ async def participants(interaction: discord.Interaction):
     
     global current_prompt
     if current_prompt is None:
-        embed = discord.Embed(
-            description="The **Weekly Queer Quill** challenge is **not active** at the moment.",
-            color=discord.Color.greyple()
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(CHALLENGE_INACTIVE_MESSAGE, ephemeral=True)
     else:
         role = discord.utils.get(interaction.guild.roles, name="Weekly Queer Quill")
         if role:
@@ -432,7 +428,7 @@ async def prompt(interaction: discord.Interaction, prompt: str):
         db.collection("prompts").document("user_inputs").set({"inputs": [prompt]})
 
     await interaction.response.send_message(
-        "Thank you! Your prompt has been successfully added.", ephemeral=True
+        "Thank you! Your prompt has been successfully submitted.", ephemeral=True
     )
     
 # Challenge history
