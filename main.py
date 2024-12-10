@@ -130,26 +130,32 @@ async def determine_poll_winner(channel):
 
     prompts = poll_data["prompts"]
     message_id = poll_data["message_id"]
-    poll_message = await channel.fetch_message(message_id)
+    
+    try:
+        poll_message = await channel.fetch_message(message_id)
 
-    # Count reactions
-    reaction_counts = {reaction.emoji: reaction.count - 1 for reaction in poll_message.reactions}
-    votes = {
-        "1️⃣": reaction_counts.get("1️⃣", 0),
-        "2️⃣": reaction_counts.get("2️⃣", 0),
-        "3️⃣": reaction_counts.get("3️⃣", 0),
-    }
-    max_votes = max(votes.values())
-    winners = [index for index, count in enumerate(votes.values()) if count == max_votes]
+        # Count reactions
+        reaction_counts = {reaction.emoji: reaction.count - 1 for reaction in poll_message.reactions}
+        votes = {
+            "1️⃣": reaction_counts.get("1️⃣", 0),
+            "2️⃣": reaction_counts.get("2️⃣", 0),
+            "3️⃣": reaction_counts.get("3️⃣", 0),
+        }
+        max_votes = max(votes.values())
+        winners = [index for index, count in enumerate(votes.values()) if count == max_votes]
 
-    if len(winners) > 1:  # Handle tie by random selection
-        chosen_index = random.choice(winners)
-    else:
-        chosen_index = winners[0]
+        if len(winners) > 1:  # Handle tie by random selection
+            chosen_index = random.choice(winners)
+        else:
+            chosen_index = winners[0]
 
-    clear_poll_data()
-    return prompts[chosen_index]
-
+        clear_poll_data()
+        return prompts[chosen_index]
+    
+    except discord.errors.NotFound:
+        # If the poll message doesn't exist, fallback to a random choice
+        clear_poll_data()
+        return random.choice(plot_ideas) + ", BUT " + random.choice(twist_ideas)
 
 # End challenge
 @tasks.loop(time=END_TIME) 
