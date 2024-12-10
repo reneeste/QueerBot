@@ -163,8 +163,8 @@ async def scheduled_end():
   if datetime.now(timezone.utc).weekday() == 6:  # 6 = Sunday
     await end_challenge(bot)
 
-@bot.tree.command(name="qb-end", description="Manually end the Weekly Queer Quill challenge (Admin Only)")
-async def qb_end(interaction: discord.Interaction):
+@bot.tree.command(name="wqq-end", description="Manually end the Weekly Queer Quill challenge (Admin Only)")
+async def wqq_end(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -225,8 +225,8 @@ async def scheduled_start():
     if datetime.now(timezone.utc).weekday() == 0:  # Monday
       await start_challenge(bot)
 
-@bot.tree.command(name="qb-start", description="Manually start the Weekly Queer Quill challenge (Admin Only)")
-async def qb_start(interaction: discord.Interaction):
+@bot.tree.command(name="wqq-start", description="Manually start the Weekly Queer Quill challenge (Admin Only)")
+async def wqq_start(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
