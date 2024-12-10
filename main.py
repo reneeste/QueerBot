@@ -248,7 +248,7 @@ async def start_challenge(bot, guild=None, interaction=None):
                     title="The Weekly Queer Quill challenge has begun!",
                     description=(
                         f"**And this week's prompt is...** *{current_prompt}*\n\n"
-                        f"The challenge ends on **{end_time_str}**. Use </join:1315801705304035350> to participate!"
+                        f"The challenge ends on **{end_time_str}**. Use </join:1315867324779073559> to participate!"
                     ),
                     color=discord.Color.dark_purple()
                 )
@@ -340,7 +340,7 @@ async def info(interaction: discord.Interaction):
         "Each week, **Weekly Queer Quill** kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist! Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
     prompt_message = (
-        "**Submit your own prompt with </prompt:1315836027650310186>!**"
+        "**Submit your own prompt with </prompt:1315867324779073564>!**"
     )
 
     if current_prompt is None:  # No active challenge
@@ -362,7 +362,7 @@ async def info(interaction: discord.Interaction):
         embed.add_field(name="", value=f"**Ongoing Prompt:** {current_prompt}", inline=False)
         embed.add_field(name="", value=f"**Time Remaining:** {time_remaining_str}\n\n\u200b", inline=False)
         embed.add_field(name="", value=prompt_message, inline=False)
-        embed.add_field(name="", value=f"**Use </join:1315801705304035350> to participate!**", inline=False)
+        embed.add_field(name="", value=f"**Use </join:1315867324779073559> to participate!**", inline=False)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -393,7 +393,7 @@ async def participants(interaction: discord.Interaction):
             else:
                 # Embed for no participants yet
                 embed = discord.Embed(
-                    description="No one has joined the **Weekly Queer Quill** yet. Be the first to participate by using </join:1315801705304035350>!",
+                    description="No one has joined the **Weekly Queer Quill** yet. Be the first to participate by using </join:1315867324779073559>!",
                     color=discord.Color.greyple()
                 )
             await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -441,23 +441,23 @@ def load_challenge_history():
     docs = db.collection('challenge_history').stream()
     return [doc.to_dict() for doc in docs]
 
-@bot.tree.command(name="admin-sync", description="Sync commands (Admin Only)")
-async def admin_sync(interaction: discord.Interaction):
-    if not is_in_weekly_queer_quill_channel(interaction):
-        await send_channel_error(interaction)
-        return
+# @bot.tree.command(name="admin-sync", description="Sync commands (Admin Only)")
+# async def admin_sync(interaction: discord.Interaction):
+#     if not is_in_weekly_queer_quill_channel(interaction):
+#         await send_channel_error(interaction)
+#         return
     
-    if not interaction.user.guild_permissions.administrator:
-        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
-        return
+#     if not interaction.user.guild_permissions.administrator:
+#         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+#         return
 
-    try:
-        await bot.tree.sync(guild=interaction.guild)
-        await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
-        print("Bot commands synced")
-    except Exception as e:
-        await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
-        print(f"Error syncing commands: {e}")
+#     try:
+#         await bot.tree.sync(guild=interaction.guild)
+#         await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
+#         print("Bot commands synced")
+#     except Exception as e:
+#         await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
+#         print(f"Error syncing commands: {e}")
     
 def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
     correct_channel_id = 1315173759497273414 
