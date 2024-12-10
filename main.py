@@ -163,8 +163,8 @@ async def scheduled_end():
   if datetime.now(timezone.utc).weekday() == 6:  # 6 = Sunday
     await end_challenge(bot)
 
-@bot.tree.command(name="admin-end", description="Manually end the Weekly Queer Quill challenge (Admin Only)")
-async def admin_end(interaction: discord.Interaction):
+@bot.tree.command(name="qb-end", description="Manually end the Weekly Queer Quill challenge (Admin Only)")
+async def qb_end(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -225,8 +225,8 @@ async def scheduled_start():
     if datetime.now(timezone.utc).weekday() == 0:  # Monday
       await start_challenge(bot)
 
-@bot.tree.command(name="admin-start", description="Manually start the Weekly Queer Quill challenge (Admin Only)")
-async def admin_start(interaction: discord.Interaction):
+@bot.tree.command(name="qb-start", description="Manually start the Weekly Queer Quill challenge (Admin Only)")
+async def qb_start(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -443,23 +443,6 @@ def load_challenge_history():
     docs = db.collection('challenge_history').stream()
     return [doc.to_dict() for doc in docs]
 
-# @bot.tree.command(name="admin-sync", description="Sync commands (Admin Only)")
-# async def admin_sync(interaction: discord.Interaction):
-#     if not is_in_weekly_queer_quill_channel(interaction):
-#         await send_channel_error(interaction)
-#         return
-    
-#     if not interaction.user.guild_permissions.administrator:
-#         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
-#         return
-
-#     try:
-#         await bot.tree.sync(guild=interaction.guild)
-#         await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
-#         print("Bot commands synced")
-#     except Exception as e:
-#         await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
-#         print(f"Error syncing commands: {e}")
     
 def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
     correct_channel_id = 1315173759497273414 
@@ -486,7 +469,6 @@ async def on_ready():
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
-    # Uncomment the line below if new commands are added and restart bot
     await bot.tree.sync() 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
