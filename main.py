@@ -1,13 +1,13 @@
 import os
 import discord
 import random
-import json
-import time as sys_time
 from datetime import datetime, time, timedelta, timezone
 from discord.ext import commands, tasks
+from discord import app_commands
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.api_core.exceptions import NotFound
 
 # Bot
 load_dotenv()
@@ -16,7 +16,6 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="/" , intents=intents, application_id="1313994355974869013")
-GUILD_ID = os.getenv('GUILD_ID')
 
 # Firebase
 cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
@@ -298,7 +297,7 @@ async def join(interaction: discord.Interaction):
 
 # Leave
 @bot.tree.command(name="leave", description="Leave the Weekly Queer Quill challenge")
-async def leavee(interaction: discord.Interaction):
+async def leave(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -329,7 +328,7 @@ async def leavee(interaction: discord.Interaction):
 
 # Info
 @bot.tree.command(name="info", description="Get information about the Weekly Queer Quill challenge")
-async def infoo(interaction: discord.Interaction):
+async def info(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
@@ -340,11 +339,14 @@ async def infoo(interaction: discord.Interaction):
     base_message = (
         "Each week, **Weekly Queer Quill** kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist! Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
+    prompt_message = (
+        "**Submit your own prompt with </prompt:1315836027650310186>!**"
+    )
 
     if current_prompt is None:  # No active challenge
         embed = discord.Embed(
-            title="Weekly Queer Quill Challenge Information",
-            description=f"{base_message}\n\nThe challenge is **not active** at the moment.",
+            title="Weekly Queer Quill",
+            description=f"{base_message}\n\n{prompt_message}\n\nThe challenge is **not active** at the moment.",
             color=discord.Color.greyple() 
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -358,8 +360,9 @@ async def infoo(interaction: discord.Interaction):
         )
         # Add fields for the ongoing prompt and time remaining f"{i}️. {prompt}"
         embed.add_field(name="", value=f"**Ongoing Prompt:** {current_prompt}", inline=False)
-        embed.add_field(name="", value=f"**Time Remaining:** {time_remaining_str}", inline=False)
-        embed.add_field(name="", value=f"Use </join:1315801705304035350> to participate if you haven't yet!", inline=False)
+        embed.add_field(name="", value=f"**Time Remaining:** {time_remaining_str}\n\n\u200b", inline=False)
+        embed.add_field(name="", value=prompt_message, inline=False)
+        embed.add_field(name="", value=f"**Use </join:1315801705304035350> to participate!**", inline=False)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -399,24 +402,33 @@ async def participants(interaction: discord.Interaction):
             await interaction.response.send_message(
                 "Error. Please contact an administrator.", ephemeral=True
             )
-            
+
 # Prompt
-@bot.tree.command(name="prompt", description="Learn about submitting prompts")
-async def prompt(interaction: discord.Interaction):
+@bot.tree.command(name="prompt", description="Submit your prompt idea")
+@app_commands.describe(prompt="One sentence plot (Example: Two enemy spies find themselves stranded together)")
+async def prompt(interaction: discord.Interaction, prompt: str):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
 
-    embed = discord.Embed(
-        title="How Prompts Work",
-        description=(
-            "The **Weekly Queer Quill** challenge combines a randomly selected plot idea with a plot twist! For example: Two spies on opposite sides of the mission find themselves stranded together, BUT the characters' meeting was planned by a third party.\n\n"
-            "**Want to add your own prompt?** Use `/prompt add` to submit a short plot idea, and QueerBot will make sure to twist it up!"
-        ),
-        color=discord.Color.greyple()
-    )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    if len(prompt) > 150:
+        await interaction.response.send_message(
+            f"Your prompt '**{prompt}**' is too long! Please limit it to 150 characters.",
+            ephemeral=True,
+        )
+        return
 
+    try:
+        db.collection("prompts").document("user_inputs").update(
+            {"inputs": firestore.ArrayUnion([prompt])}
+        )
+    except NotFound:
+        db.collection("prompts").document("user_inputs").set({"inputs": [prompt]})
+
+    await interaction.response.send_message(
+        "Thank you! Your prompt has been successfully added.", ephemeral=True
+    )
+    
 # Challenge history
 def add_to_challenge_history(end_date, prompt, participants):
     db.collection('challenge_history').add({
@@ -429,19 +441,6 @@ def load_challenge_history():
     docs = db.collection('challenge_history').stream()
     return [doc.to_dict() for doc in docs]
 
-# Command restrictions
-def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
-    correct_channel_id = 1315173759497273414 
-    return interaction.channel.id == correct_channel_id
-    
-async def send_channel_error(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="Error!",
-        description=f"Head over to <#1315173759497273414> to do this",
-        color=discord.Color.red()
-    )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-    
 @bot.tree.command(name="admin-sync", description="Sync commands (Admin Only)")
 async def admin_sync(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
@@ -460,6 +459,18 @@ async def admin_sync(interaction: discord.Interaction):
         await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
         print(f"Error syncing commands: {e}")
     
+def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
+    correct_channel_id = 1315173759497273414 
+    return interaction.channel.id == correct_channel_id
+    
+async def send_channel_error(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="Error!",
+        description=f"Head over to <#1315173759497273414> to do this",
+        color=discord.Color.red()
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)    
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 @bot.event
@@ -473,9 +484,9 @@ async def on_ready():
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
-    #await bot.tree.sync()
-    print("Note: Remember to use /admin-sync if commands need to be synced")
-    
+    # Uncomment the line below if new commands are added and restart bot
+    await bot.tree.sync() 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 bot.run(TOKEN)
