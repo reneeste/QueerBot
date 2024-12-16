@@ -346,7 +346,7 @@ async def info(interaction: discord.Interaction):
         "Each week, **Weekly Queer Quill** kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist! Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
     prompt_message = (
-        "**Submit your own prompt with </prompt:1315867324779073564>!**"
+        "**Submit your own prompt with </prompt:1318017617088352258>!**"
     )
 
     if current_prompt is None:  # No active challenge
