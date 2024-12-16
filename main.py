@@ -455,6 +455,24 @@ async def send_channel_error(interaction: discord.Interaction):
         color=discord.Color.red()
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)    
+    
+@bot.tree.command(name="admin-sync", description="Sync commands (Admin Only)")
+async def admin_sync(interaction: discord.Interaction):
+    if not is_in_weekly_queer_quill_channel(interaction):
+        await send_channel_error(interaction)
+        return
+    
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        return
+
+    try:
+        await bot.tree.sync(guild=interaction.guild)
+        await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
+        print("Bot commands synced using /admin-sync")
+    except Exception as e:
+        await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
+        print(f"Error syncing commands: {e}")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
