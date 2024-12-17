@@ -22,7 +22,6 @@ cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Plot and twist ideas 
 def load_ideas(collection_name):
@@ -210,7 +209,6 @@ async def end_challenge(bot, interaction=None):
         else:
             print("No active challenge to end.")
 
-
 # Start challenge
 @tasks.loop(time=START_TIME)
 async def scheduled_start():
@@ -256,9 +254,7 @@ async def start_challenge(bot, guild=None, interaction=None):
         if interaction:
             await interaction.followup.send("A challenge is already active. Skipping start.", ephemeral=True)
 
-
 # Commands
-
 CHALLENGE_INACTIVE_MESSAGE = ( "The **Weekly Queer Quill** challenge is **not active** at the moment. Please wait until the next challenge starts." )
 
 # Join
@@ -459,8 +455,7 @@ async def wqq_sync(interaction: discord.Interaction):
         await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
         print(f"Error syncing commands: {e}")
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+# Run bot
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -472,7 +467,5 @@ async def on_ready():
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 bot.run(TOKEN)
