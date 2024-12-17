@@ -346,7 +346,7 @@ async def info(interaction: discord.Interaction):
         "Each week, **Weekly Queer Quill** kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist! Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
     prompt_message = (
-        "**Submit your own prompt with </prompt:1318017617088352258>!**"
+        "**Submit your own prompt with </prompt:1318352950493577228>!**"
     )
 
     if current_prompt is None:  # No active challenge
@@ -455,24 +455,24 @@ async def send_channel_error(interaction: discord.Interaction):
         color=discord.Color.red()
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)    
-    
-# @bot.tree.command(name="wqq-sync", description="Sync commands (Admin Only)")
-# async def wqq_sync(interaction: discord.Interaction):
-#     if not is_in_weekly_queer_quill_channel(interaction):
-#         await send_channel_error(interaction)
-#         return
-    
-#     if not interaction.user.guild_permissions.administrator:
-#         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
-#         return
 
-#     try:
-#         await bot.tree.sync(guild=interaction.guild)
-#         await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
-#         print("Bot commands synced using /admin-sync")
-#     except Exception as e:
-#         await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
-#         print(f"Error syncing commands: {e}")
+@bot.tree.command(name="wqq-sync", description="Sync commands (Admin Only)")
+async def wqq_sync(interaction: discord.Interaction):
+    if not is_in_weekly_queer_quill_channel(interaction):
+        await send_channel_error(interaction)
+        return
+    
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        return
+
+    try:
+        await bot.tree.sync(guild=interaction.guild)
+        await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
+        print("Bot commands synced using /admin-sync")
+    except Exception as e:
+        await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
+        print(f"Error syncing commands: {e}")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -487,7 +487,7 @@ async def on_ready():
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
-    await bot.tree.sync() 
+    # await bot.tree.sync() 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
