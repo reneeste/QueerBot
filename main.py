@@ -149,6 +149,30 @@ async def determine_poll_winner(channel):
         clear_poll_data()
         return random.choice(plot_ideas) + ", BUT " + random.choice(twist_ideas)
 
+# Challenge history
+def add_to_challenge_history(end_date, prompt, participants):
+    db.collection('challenge_history').add({
+        'end_date': end_date,
+        'prompt': prompt,
+        'participants': participants
+    })
+
+def load_challenge_history():
+    docs = db.collection('challenge_history').stream()
+    return [doc.to_dict() for doc in docs]
+   
+def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
+    correct_channel_id = 1315173759497273414 
+    return interaction.channel.id == correct_channel_id
+    
+async def send_channel_error(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="Error!",
+        description=f"Head over to <#1315173759497273414> to do this",
+        color=discord.Color.red()
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)    
+
 # End challenge
 @tasks.loop(time=END_TIME) 
 async def scheduled_end():
@@ -412,30 +436,6 @@ async def prompt(interaction: discord.Interaction, prompt: str):
         "Thank you! Your prompt has been successfully submitted.", ephemeral=True
     )
     
-# Challenge history
-def add_to_challenge_history(end_date, prompt, participants):
-    db.collection('challenge_history').add({
-        'end_date': end_date,
-        'prompt': prompt,
-        'participants': participants
-    })
-
-def load_challenge_history():
-    docs = db.collection('challenge_history').stream()
-    return [doc.to_dict() for doc in docs]
-   
-def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
-    correct_channel_id = 1315173759497273414 
-    return interaction.channel.id == correct_channel_id
-    
-async def send_channel_error(interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="Error!",
-        description=f"Head over to <#1315173759497273414> to do this",
-        color=discord.Color.red()
-    )
-    await interaction.response.send_message(embed=embed, ephemeral=True)    
-
 # Sync commands manually
 @bot.tree.command(name="wqq-sync", description="Sync commands (Admin Only)")
 async def wqq_sync(interaction: discord.Interaction):
