@@ -456,6 +456,7 @@ async def send_channel_error(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)    
 
+# Sync commands manually
 @bot.tree.command(name="wqq-sync", description="Sync commands (Admin Only)")
 async def wqq_sync(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
@@ -467,9 +468,9 @@ async def wqq_sync(interaction: discord.Interaction):
         return
 
     try:
-        await bot.tree.sync(guild=interaction.guild)
+        await bot.tree.sync()
         await interaction.response.send_message("Bot commands successfully synced!", ephemeral=True)
-        print("Bot commands synced using /admin-sync")
+        print("Bot commands synced using /wqq-sync")
     except Exception as e:
         await interaction.response.send_message(f"Failed to sync commands: {e}", ephemeral=True)
         print(f"Error syncing commands: {e}")
