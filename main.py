@@ -39,7 +39,7 @@ def load_ideas(collection_name):
 plot_ideas = load_ideas('plot_ideas')
 twist_ideas = load_ideas('twist_ideas')
 
-# Current prompt
+# Prompt
 def save_prompt(prompt):
     db.collection('data').document('current_prompt').set({'current_prompt': prompt})
 
@@ -70,18 +70,17 @@ def load_times_from_firestore():
 START_TIME, END_TIME = load_times_from_firestore()
 
 def get_next_sunday_end_time():
-    now = datetime.now(timezone.utc)  # Use timezone-aware UTC
-    next_sunday = now + timedelta(days=(6 - now.weekday()))  # Find the next Sunday
-    end_time = datetime.combine(next_sunday.date(), time(16, 0, 0), tzinfo=timezone.utc)  # Set the end time at 16:00 UTC
+    now = datetime.now(timezone.utc)
+    next_sunday = now + timedelta(days=(6 - now.weekday())) 
+    end_time = datetime.combine(next_sunday.date(), END_TIME, tzinfo=timezone.utc)
     return end_time
 
 def time_until_end():
-    now = datetime.now(timezone.utc)  # Use timezone-aware datetime in UTC
+    now = datetime.now(timezone.utc)
     next_end_time = get_next_sunday_end_time()
 
-    # Compare time only if both datetimes are timezone-aware
     if now > next_end_time:
-        next_end_time = get_next_sunday_end_time()  # Reset if we've already passed this week's Sunday end
+        next_end_time = get_next_sunday_end_time()  # Reset if already past this week's Sunday
     time_remaining = next_end_time - now
     days, hours, minutes = time_remaining.days, time_remaining.seconds // 3600, (time_remaining.seconds // 60) % 60
     time_remaining_str = f"{days} days, {hours} hours, and {minutes} minutes"
@@ -104,22 +103,17 @@ def clear_poll_data():
 async def create_poll(channel):
     poll_prompts = [f"{random.choice(plot_ideas)}, BUT {random.choice(twist_ideas)}" for _ in range(3)]
 
-    # Create an embed for a prettier message
     embed = discord.Embed(
         title="Vote for next week's prompt!",
         color=discord.Color.dark_purple()
     )
 
-    # Add each prompt as a field in the embed
     for i, prompt in enumerate(poll_prompts, 1):
         embed.add_field(name="", value=f"**{i}️.** {prompt}", inline=False)
-
     poll_message = await channel.send(embed=embed)
 
-    # React to the message with emojis for voting
     for emoji in ["1️⃣", "2️⃣", "3️⃣"]:
         await poll_message.add_reaction(emoji)
-
     save_poll_data(poll_prompts, poll_message.id)
 
 async def determine_poll_winner(channel):
@@ -134,7 +128,6 @@ async def determine_poll_winner(channel):
     try:
         poll_message = await channel.fetch_message(message_id)
 
-        # Count reactions
         reaction_counts = {reaction.emoji: reaction.count - 1 for reaction in poll_message.reactions}
         votes = {
             "1️⃣": reaction_counts.get("1️⃣", 0),
@@ -144,7 +137,7 @@ async def determine_poll_winner(channel):
         max_votes = max(votes.values())
         winners = [index for index, count in enumerate(votes.values()) if count == max_votes]
 
-        if len(winners) > 1:  # Handle tie by random selection
+        if len(winners) > 1:  # Tie handling
             chosen_index = random.choice(winners)
         else:
             chosen_index = winners[0]
@@ -153,7 +146,7 @@ async def determine_poll_winner(channel):
         return prompts[chosen_index]
     
     except discord.errors.NotFound:
-        # If the poll message doesn't exist, fallback to a random choice
+        # Fallback to a random choice if message doesn't exist
         clear_poll_data()
         return random.choice(plot_ideas) + ", BUT " + random.choice(twist_ideas)
 
@@ -209,7 +202,6 @@ async def end_challenge(bot, interaction=None):
         current_prompt = None
         clear_prompt()
 
-        # Send the final response to the admin
         if interaction:
             await interaction.followup.send("The challenge has been ended!", ephemeral=True)
     else:
@@ -222,7 +214,7 @@ async def end_challenge(bot, interaction=None):
 # Start challenge
 @tasks.loop(time=START_TIME)
 async def scheduled_start():
-    if datetime.now(timezone.utc).weekday() == 0:  # Monday
+    if datetime.now(timezone.utc).weekday() == 0:  # 0 = Monday
       await start_challenge(bot)
 
 @bot.tree.command(name="wqq-start", description="Manually start the Weekly Queer Quill challenge (Admin Only)")
@@ -244,12 +236,10 @@ async def start_challenge(bot, guild=None, interaction=None):
         for guild in bot.guilds:
             challenge_channel = discord.utils.get(guild.channels, name="weekly-queer-quill")
             if challenge_channel:
-                # Determine poll winner
                 current_prompt = await determine_poll_winner(challenge_channel)
                 save_prompt(current_prompt)
                 next_end_time = get_next_sunday_end_time()
                 end_time_str = next_end_time.strftime('%A %I:%M %p (UTC)').lstrip('0').replace(' 0', ' ')
-                # Message
                 embed = discord.Embed(
                     title="The Weekly Queer Quill challenge has begun!",
                     description=(
@@ -279,7 +269,7 @@ async def join(interaction: discord.Interaction):
         return
     
     global current_prompt
-    if current_prompt is None:  # If no active prompt, prevent joining
+    if current_prompt is None:  #
         await interaction.response.send_message(CHALLENGE_INACTIVE_MESSAGE, ephemeral=True)
         return
 
@@ -309,7 +299,7 @@ async def leave(interaction: discord.Interaction):
         return
 
     global current_prompt
-    if current_prompt is None:  # If no active prompt, prevent leaving
+    if current_prompt is None: 
         await interaction.response.send_message(CHALLENGE_INACTIVE_MESSAGE, ephemeral=True)
         return
 
@@ -338,25 +328,24 @@ async def info(interaction: discord.Interaction):
     if not is_in_weekly_queer_quill_channel(interaction):
         await send_channel_error(interaction)
         return
-    
+
     global current_prompt  
 
-    # Base message about the challenge
     base_message = (
         "Each week, **Weekly Queer Quill** kicks off a fun writing challenge, combining a randomly selected plot idea with a plot twist! Participate, write whatever comes to mind, however long, and share your take on the weekly prompt with the community!"
     )
     prompt_message = (
-        "**Submit your own prompt with </prompt:1318352950493577228>!**"
+        "**Submit your own prompt with </prompt:1318541720794697771>!**"
     )
 
-    if current_prompt is None:  # No active challenge
+    if current_prompt is None: 
         embed = discord.Embed(
             title="Weekly Queer Quill",
             description=f"{base_message}\n\n{prompt_message}\n\nThe challenge is **not active** at the moment.",
             color=discord.Color.greyple() 
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
-    else:  # Active challenge
+    else: 
         time_remaining_str, next_end_time = time_until_end()
 
         embed = discord.Embed(
@@ -364,7 +353,6 @@ async def info(interaction: discord.Interaction):
             description=f"{base_message}\n\n\u200b",
             color=discord.Color.greyple()
         )
-        # Add fields for the ongoing prompt and time remaining f"{i}️. {prompt}"
         embed.add_field(name="", value=f"**Ongoing Prompt:** {current_prompt}", inline=False)
         embed.add_field(name="", value=f"**Time Remaining:** {time_remaining_str}\n\n\u200b", inline=False)
         embed.add_field(name="", value=prompt_message, inline=False)
@@ -387,20 +375,17 @@ async def participants(interaction: discord.Interaction):
         if role:
             members = [member.mention for member in role.members][::-1]
             if members:
-                # Embed showing participants
                 embed = discord.Embed(
                     description="Here are the people taking part in the current **Weekly Queer Quill**:\n\n" + " ".join(members),
                     color=discord.Color.greyple()
                 )
             else:
-                # Embed for no participants yet
                 embed = discord.Embed(
                     description="No one has joined the **Weekly Queer Quill** yet. Be the first to participate by using </join:1315867324779073559>!",
                     color=discord.Color.greyple()
                 )
             await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            # Regular message for role not found
             await interaction.response.send_message(
                 "Error. Please contact an administrator.", ephemeral=True
             )
@@ -442,8 +427,7 @@ def add_to_challenge_history(end_date, prompt, participants):
 def load_challenge_history():
     docs = db.collection('challenge_history').stream()
     return [doc.to_dict() for doc in docs]
-
-    
+   
 def is_in_weekly_queer_quill_channel(interaction: discord.Interaction) -> bool:
     correct_channel_id = 1315173759497273414 
     return interaction.channel.id == correct_channel_id
@@ -488,7 +472,6 @@ async def on_ready():
     scheduled_start.start()
     scheduled_end.start()
     print("Challenge schedule set")
-    # await bot.tree.sync() 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
