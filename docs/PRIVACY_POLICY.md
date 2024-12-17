@@ -12,22 +12,22 @@ By using QueerBot, you agree to the terms outlined in this Privacy Policy. If yo
 ## 1. Data Controller
 
 The data controller for your personal data is:
-**Name:** Renee Steinberg
-**E-mail:** renee.t.steinberg@gmail.com
+- **Name:** Renee Steinberg
+- **E-mail:** renee.t.steinberg@gmail.com
 
 ## 2. Data We Collect
 
 The Bot collects only the data necessary to provide its functionality. Below is a breakdown of the data we collect:
 
 - **Data collected automatically:**
-  -- **User IDs:** Identifiers for users interacting with the Bot.
-  -- **Server IDs:** The identifier of the Discord server where the Bot is active.
+  - **User IDs:** Identifiers for users interacting with the Bot.
+  - **Server IDs:** The identifier of the Discord server where the Bot is active.
 
 - **Configuration data:**
-  -- Server and channel preferences and settings.
+  - Server and channel preferences and settings.
 
 - **Data you provide:**
-  -- Any data manually entered into the Bot's commands or related services.
+  - Any data manually entered into the Bot's commands or related services.
 
 ## 3. How We Use Your Data
 
