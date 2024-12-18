@@ -20,7 +20,7 @@ You may **not** use QueerBot to:
 - Flood servers or users with excessive messages.
 - Violate Discord’s Terms of Service or Community Guidelines.
 
-If you discover misuse of the Bot, please report it immediately to  or via the [support server](https://discord.gg/MBSZcwmvVk) or at renee.t.steinberg@gmail.com.
+If you discover misuse of the Bot, please report it immediately or via the [support server](https://discord.gg/MBSZcwmvVk) or at renee.t.steinberg@gmail.com.
 
 ## 2. License
 
