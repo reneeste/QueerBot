@@ -345,10 +345,9 @@ async def leave(interaction: discord.Interaction):
 # Info
 @bot.tree.command(name="info", description="Get information about the Weekly Queer Quill challenge")
 async def info(interaction: discord.Interaction):
-    if not is_in_weekly_queer_quill_channel(interaction):
-        await send_channel_error(interaction)
-        return
-
+    # if not is_in_weekly_queer_quill_channel(interaction):
+    #     await send_channel_error(interaction)
+    #     return
     global current_prompt  
 
     base_message = (
